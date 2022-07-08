@@ -4,6 +4,7 @@
 
 import 'package:intel_hex/src/exceptions.dart';
 import 'package:intel_hex/src/memory_segment.dart';
+import 'package:intel_hex/src/memory_segment_container.dart';
 import 'package:intel_hex/src/string_conversion.dart';
 import 'dart:math';
 
@@ -36,12 +37,9 @@ class StartSegmentAddress {
 /// constructor. If you want to write a file with binary data, then
 /// you can create an empty file and add your data by calling addAll().
 ///
-/// The contents of the file are stored as [MemorySegment].
-class IntelHexFile {
-  final List<MemorySegment> _segments;
-
-  /// Returns all segments in the file. To add data, use [addSegment] or [addAll].
-  List<MemorySegment> get segments => _segments;
+/// The contents of the file are stored as [MemorySegment]. The segments
+/// are managed in the base class [MemorySegmentContainer].
+class IntelHexFile extends MemorySegmentContainer {
 
   /// The start address where the code is executed (for 80x86 CPUs).
   /// This value may be null if it is not contained in the file.
@@ -54,22 +52,17 @@ class IntelHexFile {
   /// The start code for a record. The standard value is ":".
   String startCode = ":";
 
-  /// Creates a file with a single segment if [address] is >= 0 and [length] is >0.
+  /// Creates a file with a single segment if [address] is >= 0 and [length] is >= 0.
   /// Otherwise the file is empty.
-  IntelHexFile({int? address, int? length}) : _segments = [] {
-    if (address != null && length != null && address >= 0 && length > 0) {
-      addSegment(MemorySegment(address: address, length: length));
-    }
-  }
+  IntelHexFile({int? address, int? length}) 
+    : super(address: address, length: length);
 
   /// Creates a file with a single segment containing all bytes from [data].
   /// The start [address] is 0 unless another value is provided.
   ///
   /// The contents of [data] will be truncated to (0, 255).
   IntelHexFile.fromData(Iterable<int> data, {int address = 0})
-      : _segments = [] {
-    addAll(address, data);
-  }
+    : super.fromData(data, address: address);
 
   /// Parses the Intel Hex records in the [data] string and adds it to the
   /// segments in this object. All lines without ":" are ignored. In lines with a colon all preceding
@@ -87,7 +80,7 @@ class IntelHexFile {
   /// check by setting [allowDuplicateAddresses] to true.
   IntelHexFile.fromString(String data,
       {String? startToken, bool allowDuplicateAddresses = false})
-      : _segments = [] {
+      : super() {
     if (startToken != null) {
       startCode = startToken;
     }
@@ -163,52 +156,6 @@ class IntelHexFile {
     return rv;
   }
 
-  /// Adds the data conatined in [data] to the file at [startAddress].
-  /// Contents will be truncated to (0, 255).
-  /// If there was data
-  void addAll(int startAddress, Iterable<int> data) {
-    var newSegment = MemorySegment.fromBytes(address: startAddress, data: data);
-    addSegment(newSegment);
-  }
-
-  /// Adds the [segment] to the file and overwrites data that was stored previously at the
-  /// same addresses.
-  void addSegment(MemorySegment segment) {
-    bool combined = false;
-    for (var old in _segments) {
-      if (old.overlaps(segment)) {
-        old.combine(segment);
-        combined = true;
-        break;
-      }
-    }
-    if (!combined) {
-      _segments.add(segment);
-    }
-    _sortSegments();
-    _mergeSegments();
-    _removeOverlapping();
-  }
-
-  void _mergeSegments() {
-    for (int i = 0; i < _segments.length; ++i) {
-      for (int k = i + 1; k < _segments.length; ++k) {
-        if (_segments[k].overlaps(_segments[i])) {
-          _segments[k].combine(_segments[i]);
-          _segments[i].isOverlapping = true;
-        }
-      }
-    }
-  }
-
-  void _removeOverlapping() {
-    _segments.removeWhere((item) => item.isOverlapping);
-  }
-
-  void _sortSegments() {
-    _segments.sort((a, b) => a.address.compareTo(b.address));
-  }
-
   void _addDataRecord(IHexRecord record, int extendedLinearAddress,
       int extendedSegmentAddress, bool allowDuplicateAddresses) {
     final address =
@@ -221,19 +168,13 @@ class IntelHexFile {
   }
 
   void _verifyAddressIsUnique(MemorySegment next) {
-    for (final old in _segments) {
+    for (final old in segments) {
       if (old.isInRange(next.address, 1) || old.isInRange(next.endAddress, 1)) {
         throw IHexRangeError(
             "The address range [${next.address}, ${next.endAddress}[ of a record is not unique! It is overlapping with: [${old.address}, ${old.endAddress}[");
       }
     }
   }
-
-  /// Returns the max address in the file.
-  int get maxAddress => segments.fold(
-      0,
-      (int previousValue, MemorySegment element) =>
-          max(previousValue, element.endAddress));
 
   /// Returns the format that can be used to represent the file.
   IntelHexFormat get format {
@@ -267,10 +208,6 @@ class IntelHexFile {
   /// Prints information about the file and its contents.
   @override
   String toString() {
-    String rv = '"Intel HEX" : { "segments": [ ';
-    for (var element in _segments) {
-      rv += '{"start": ${element.address},"end": ${element.endAddress}},';
-    }
-    return '${rv.substring(0, rv.length - 1)}] }';
+    return '"Intel HEX" : { ${super.toString()} }';
   }
 }

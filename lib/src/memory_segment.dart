@@ -56,6 +56,9 @@ class MemorySegment extends Iterable<SegmentByte> {
   /// Returns one past the last valid address for this segment.
   int get endAddress => _startAddress + length;
 
+  /// Get a ByteData object from the underlying buffer. Allows to serialize/deserialze values.
+  ByteData get byteData => ByteData.sublistView(_data);
+
   /// The number of bytes inside the segment.
   @override
   int get length => _data.length;
@@ -136,6 +139,84 @@ class MemorySegment extends Iterable<SegmentByte> {
     }
     var offset = position - _startAddress;
     _data[offset] = byte;
+  }
+
+  /// Appends a [value] at the end of the buffer. length increases by 4 bytes.
+  /// The value is serialized to the given [endian] format.
+  void appendFloat32(double value, [Endian endian = Endian.little]) {
+    final old = length;
+    resize(address, old + 4);
+    byteData.setFloat32(old, value, endian);
+  }
+
+  /// Appends a [value] at the end of the buffer. length increases by 8 bytes.
+  /// The value is serialized to the given [endian] format.
+  void appendFloat64(double value, [Endian endian = Endian.little]) {
+    final old = length;
+    resize(address, old + 8);
+    byteData.setFloat64(old, value, endian);
+  }
+
+  /// Appends a [value] at the end of the buffer. length increases by 1 byte.
+  void appendInt8(int value) {
+    final old = length;
+    resize(address, old + 1);
+    byteData.setInt8(old, value);
+  }
+
+  /// Appends a [value] at the end of the buffer. length increases by 2 bytes.
+  /// The value is serialized to the given [endian] format.
+  void appendInt16(int value, [Endian endian = Endian.little]) {
+    final old = length;
+    resize(address, old + 2);
+    byteData.setInt16(old, value, endian);
+  }
+
+  /// Appends a [value] at the end of the buffer. length increases by 4 bytes.
+  /// The value is serialized to the given [endian] format.
+  void appendInt32(int value, [Endian endian = Endian.little]) {
+    final old = length;
+    resize(address, old + 4);
+    byteData.setInt32(old, value, endian);
+  }
+
+  /// Appends a [value] at the end of the buffer. length increases by 8 bytes.
+  /// The value is serialized to the given [endian] format.
+  void appendInt64(int value, [Endian endian = Endian.little]) {
+    final old = length;
+    resize(address, old + 8);
+    byteData.setInt64(old, value, endian);
+  }
+
+  /// Appends a [value] at the end of the buffer. length increases by 1 byte.
+  void appendUint8(int value) {
+    final old = length;
+    resize(address, old + 1);
+    byteData.setUint8(old, value);
+  }
+
+  /// Appends a [value] at the end of the buffer. length increases by 2 bytes.
+  /// The value is serialized to the given [endian] format.
+  void appendUint16(int value, [Endian endian = Endian.little]) {
+    final old = length;
+    resize(address, old + 2);
+    byteData.setUint16(old, value, endian);
+  }
+
+  /// Appends a [value] at the end of the buffer. length increases by 4 bytes.
+  /// The value is serialized to the given [endian] format.
+  void appendUint32(int value, [Endian endian = Endian.little]) {
+    final old = length;
+    resize(address, old + 4);
+    byteData.setUint32(old, value, endian);
+  }
+
+  /// Appends a [value] at the end of the buffer. length increases by 8 bytes.
+  /// The value is serialized to the given [endian] format.
+  void appendUint64(int value, [Endian endian = Endian.little]) {
+    final old = length;
+    resize(address, old + 8);
+    byteData.setUint64(old, value, endian);
   }
 
   /// Converts this segment to an Intel Hex file record block.

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
+import 'dart:typed_data';
+
 import 'package:intel_hex/intel_hex.dart';
 import 'package:intel_hex/src/exceptions.dart';
 import 'package:test/test.dart';
@@ -21,6 +23,14 @@ void main() {
     });
 
     test('Set line length', () {
+      var segment = MemorySegment(address: 0x42);
+      expect(
+          () => segment.lineLength = 0, throwsA(TypeMatcher<IHexValueError>()));
+      expect(() => segment.lineLength = 256,
+          throwsA(TypeMatcher<IHexValueError>()));
+    });
+
+    test('Set Data', () {
       var segment = MemorySegment(address: 0x42);
       expect(
           () => segment.lineLength = 0, throwsA(TypeMatcher<IHexValueError>()));
@@ -239,5 +249,114 @@ void main() {
       expect(count, 1025);
       expect(rv.contains(":020000040001F9\n"), true);
     });
+  });
+
+  
+  group('Append data', () {
+    var segment = MemorySegment(address: 0);
+    setUp(() {
+      segment = MemorySegment(address: 0);
+    });
+
+    test('add uint8', () {
+      segment.appendUint8(0x42);
+      expect(segment.length, 1);
+      expect(segment.byte(0), 0x42);
+    });
+
+    test('add uint16', () {
+      segment.appendUint16(0x1234);
+      expect(segment.length, 2);
+      expect(segment.byte(0), 0x34);
+      expect(segment.byte(1), 0x12);
+    });
+
+    test('add uint32', () {
+      segment.appendUint32(0x12345678);
+      expect(segment.length, 4);
+      expect(segment.byte(0), 0x78);
+      expect(segment.byte(1), 0x56);
+      expect(segment.byte(2), 0x34);
+      expect(segment.byte(3), 0x12);
+    });
+
+    test('add uint64', () {
+      segment.appendUint64(0x1122334455667788);
+      expect(segment.length, 8);
+      expect(segment.byte(0), 0x88);
+      expect(segment.byte(1), 0x77);
+      expect(segment.byte(2), 0x66);
+      expect(segment.byte(3), 0x55);
+      expect(segment.byte(4), 0x44);
+      expect(segment.byte(5), 0x33);
+      expect(segment.byte(6), 0x22);
+      expect(segment.byte(7), 0x11);
+    });
+
+    test('add int8', () {
+      segment.appendInt8(0x42);
+      expect(segment.length, 1);
+      expect(segment.byte(0), 0x42);
+    });
+
+    test('add int16', () {
+      segment.appendInt16(0x1234);
+      expect(segment.length, 2);
+      expect(segment.byte(0), 0x34);
+      expect(segment.byte(1), 0x12);
+    });
+
+    test('add int32', () {
+      segment.appendInt32(0x12345678);
+      expect(segment.length, 4);
+      expect(segment.byte(0), 0x78);
+      expect(segment.byte(1), 0x56);
+      expect(segment.byte(2), 0x34);
+      expect(segment.byte(3), 0x12);
+    });
+    test('add int32 big', () {
+      segment.appendInt32(0x12345678, Endian.big);
+      expect(segment.length, 4);
+      expect(segment.byte(0), 0x12);
+      expect(segment.byte(1), 0x34);
+      expect(segment.byte(2), 0x56);
+      expect(segment.byte(3), 0x78);
+    });
+
+    test('add int64', () {
+      segment.appendInt64(0x1122334455667788);
+      expect(segment.length, 8);
+      expect(segment.byte(0), 0x88);
+      expect(segment.byte(1), 0x77);
+      expect(segment.byte(2), 0x66);
+      expect(segment.byte(3), 0x55);
+      expect(segment.byte(4), 0x44);
+      expect(segment.byte(5), 0x33);
+      expect(segment.byte(6), 0x22);
+      expect(segment.byte(7), 0x11);
+    });
+
+    test('add float32', () {
+      segment.appendFloat32(3.04);
+      expect(segment.length, 4);
+      expect(segment.byte(0), 92);
+      expect(segment.byte(1), 143);
+      expect(segment.byte(2), 66);
+      expect(segment.byte(3), 64);
+    });
+
+    test('add float64', () {
+      segment.appendFloat64(3.04);
+      expect(segment.length, 8);
+      expect(segment.byte(0), 82);
+      expect(segment.byte(1), 184);
+      expect(segment.byte(2), 30);
+      expect(segment.byte(3), 133);
+      expect(segment.byte(4), 235);
+      expect(segment.byte(5), 81);
+      expect(segment.byte(6), 8);
+      expect(segment.byte(7), 64);
+    });
+
   });
 }
