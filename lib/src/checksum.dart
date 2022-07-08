@@ -1,12 +1,12 @@
 // Copyright (C) 2022 by domohuhn
-// 
+//
 // SPDX-License-Identifier: BSD-3-Clause
 
 import 'dart:typed_data';
 
 /// Validates that the byte data read from an Intel Hex record is correct by computing the checksum.
 bool validateChecksum(Iterable<int> data) {
-  return _sumAllLSB(data)==0;
+  return _sumAllLSB(data) == 0;
 }
 
 /// Computes the Intel HEX chesum for given [data]
@@ -19,7 +19,7 @@ int computeChecksum(Iterable<int> data) {
 /// Returns the truncated LSB of the sum.
 int _sumAllLSB(Iterable<int> data) {
   int sum = 0;
-  for(int v in data) {
+  for (int v in data) {
     sum += v & 0xFF;
   }
   return sum & 0xFF;

@@ -1,5 +1,5 @@
 // Copyright (C) 2022 by domohuhn
-// 
+//
 // SPDX-License-Identifier: BSD-3-Clause
 
 import 'package:intel_hex/intel_hex.dart';
@@ -8,7 +8,6 @@ import 'package:test/test.dart';
 
 void main() {
   group('Create Intel HEX files', () {
-
     test('Empty file', () {
       final hex = IntelHexFile();
       expect(hex.segments.length, 0);
@@ -21,21 +20,23 @@ void main() {
       final hex = IntelHexFile(address: 0x120, length: 0x20);
       expect(hex.segments.length, 1);
       expect(hex.maxAddress, 0x140);
-      expect(hex.toFileContents(), ":1001200000000000000000000000000000000000CF\n:1001300000000000000000000000000000000000BF\n:00000001FF\n");
-      expect(hex.toString(), '"Intel HEX" : { "segments": [ \n{"start": 288,"end": 320}\n] }');
+      expect(hex.toFileContents(),
+          ":1001200000000000000000000000000000000000CF\n:1001300000000000000000000000000000000000BF\n:00000001FF\n");
+      expect(hex.toString(),
+          '"Intel HEX" : { "segments": [ \n{"start": 288,"end": 320}\n] }');
     });
 
     test('file add data', () {
       final hex = IntelHexFile(address: 0x0, length: 0x20);
       var data = <int>[];
-      for(int i=0;i<0x130;++i) {
+      for (int i = 0; i < 0x130; ++i) {
         data.add(0xFF);
       }
       hex.addAll(0x10, data);
       expect(hex.segments.length, 1);
       expect(hex.maxAddress, 0x140);
-      for(int i=0;i<0x140;++i) {
-        expect(hex.segments.first.byte(i), i<0x10 ? 0 : 0xFF);
+      for (int i = 0; i < 0x140; ++i) {
+        expect(hex.segments.first.byte(i), i < 0x10 ? 0 : 0xFF);
       }
     });
 
@@ -56,7 +57,6 @@ void main() {
   });
 
   group('Parse Intel HEX files', () {
-
     test('Empty file', () {
       final hex = IntelHexFile.fromString("");
       expect(hex.segments.length, 0);
@@ -120,11 +120,11 @@ void main() {
       expect(hex.startSegmentAddress, isNot(null));
       expect(hex.startSegmentAddress!.instructionPointer, 0x3800);
       expect(hex.startSegmentAddress!.codeSegment, 0x0000);
-
     });
 
     test('Parse startSegment multiple', () {
-      expect(() => IntelHexFile.fromString(startSegment + startSegment), throwsA(TypeMatcher<IHexValueError>()));
+      expect(() => IntelHexFile.fromString(startSegment + startSegment),
+          throwsA(TypeMatcher<IHexValueError>()));
     });
 
     test('Parse startLinear', () {
@@ -135,29 +135,40 @@ void main() {
     });
 
     test('Parse startLinear multiple', () {
-      expect(() => IntelHexFile.fromString(startLinear + startLinear), throwsA(TypeMatcher<IHexValueError>()));
+      expect(() => IntelHexFile.fromString(startLinear + startLinear),
+          throwsA(TypeMatcher<IHexValueError>()));
     });
 
     test('Data size error - wrong byte length in record', () {
-      expect(() => IntelHexFile.fromString(":200130003F0156702B5E712B722B732146013421B7"), throwsA(TypeMatcher<IHexValueError>()));
+      expect(
+          () => IntelHexFile.fromString(
+              ":200130003F0156702B5E712B722B732146013421B7"),
+          throwsA(TypeMatcher<IHexValueError>()));
     });
 
     test('Data size error - too few bytes', () {
-      expect(() => IntelHexFile.fromString(":100130"), throwsA(TypeMatcher<IHexValueError>()));
+      expect(() => IntelHexFile.fromString(":100130"),
+          throwsA(TypeMatcher<IHexValueError>()));
     });
 
     test('Record type error', () {
-      expect(() => IntelHexFile.fromString(":100130063F0156702B5E712B722B732146013421C1"), throwsA(TypeMatcher<IHexValueError>()));
+      expect(
+          () => IntelHexFile.fromString(
+              ":100130063F0156702B5E712B722B732146013421C1"),
+          throwsA(TypeMatcher<IHexValueError>()));
     });
 
     test('Checksum error', () {
-      expect(() => IntelHexFile.fromString(":100130003F0256702B5E712B722B732146013421C7"), throwsA(TypeMatcher<IHexValueError>()));
+      expect(
+          () => IntelHexFile.fromString(
+              ":100130003F0256702B5E712B722B732146013421C7"),
+          throwsA(TypeMatcher<IHexValueError>()));
     });
 
     test('Conversion error', () {
-      expect(() => IntelHexFile.fromString(":ZZ000001FF"), throwsA(TypeMatcher<IHexValueError>()));
+      expect(() => IntelHexFile.fromString(":ZZ000001FF"),
+          throwsA(TypeMatcher<IHexValueError>()));
     });
-    
   });
 }
 

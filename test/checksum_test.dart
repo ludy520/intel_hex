@@ -1,5 +1,5 @@
 // Copyright (C) 2022 by domohuhn
-// 
+//
 // SPDX-License-Identifier: BSD-3-Clause
 
 import 'package:intel_hex/src/checksum.dart';
