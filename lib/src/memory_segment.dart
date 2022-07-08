@@ -67,6 +67,11 @@ class MemorySegment extends Iterable<SegmentByte> {
     return _startAddress <= position && position + size <= endAddress;
   }
 
+  /// Checks if two segments are overlapping / can be combined without a gap.
+  bool overlaps(MemorySegment other) {
+    return address <= other.endAddress && other.address <= endAddress;
+  }
+
   @override
   Iterator<SegmentByte> get iterator => SegmentIterator(this);
 
@@ -203,11 +208,6 @@ class MemorySegment extends Iterable<SegmentByte> {
           startCode: startCode);
     }
     return rv;
-  }
-
-  /// Checks if two segments are overlapping / can be combined without a gap.
-  bool overlaps(MemorySegment other) {
-    return address <= other.endAddress && other.address <= endAddress;
   }
 
   /// Combines this segment with the other segment.

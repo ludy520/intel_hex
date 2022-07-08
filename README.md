@@ -5,9 +5,9 @@
 
 A dart library that reads and writes [Intel HEX files](https://en.wikipedia.org/wiki/Intel_HEX).
 Intel HEX is a file format that is used to store binary data as ASCII text. It is often used
-to program microcontrollers. The file format comprises record blocks. Each record is a line in
-the hex file. The record start at the ":" character and ends at the end of the line. The last
-byte of a line is the checksum of all other bytes.
+to program microcontrollers. The file format comprises of record blocks. Each record block is represented as a line in
+the text file. A record starts with a ":" character and ends at the end of the line. The last
+byte of a record block is the checksum of all other bytes in this block.
 
 A record has six fields:
 

@@ -82,7 +82,12 @@ class IntelHexFile {
   ///
   /// If a nonstandard start code should be used instead of ":", then you must provide it
   /// via the optional argument [startToken]. If provided, the [startCode] property will be set.
-  IntelHexFile.fromString(String data, {String? startToken}) : _segments = [] {
+  ///
+  /// The constructor will also verify that every address in the data string is unique. You can prevent this
+  /// check by setting [allowDuplicateAddresses] to true.
+  IntelHexFile.fromString(String data,
+      {String? startToken, bool allowDuplicateAddresses = false})
+      : _segments = [] {
     if (startToken != null) {
       startCode = startToken;
     }
@@ -102,8 +107,8 @@ class IntelHexFile {
         var record = IHexRecord(line, startCode: startCode);
         switch (record.recordType) {
           case IHexRecordType.data:
-            _addDataRecord(
-                record, extendedLinearAddress, extendedSegmentAddress);
+            _addDataRecord(record, extendedLinearAddress,
+                extendedSegmentAddress, allowDuplicateAddresses);
             break;
           case IHexRecordType.endOfFile:
             done = true;
@@ -205,11 +210,23 @@ class IntelHexFile {
   }
 
   void _addDataRecord(IHexRecord record, int extendedLinearAddress,
-      int extendedSegmentAddress) {
+      int extendedSegmentAddress, bool allowDuplicateAddresses) {
     final address =
         record.recordAddress + extendedLinearAddress + extendedSegmentAddress;
     final seg = MemorySegment.fromBytes(address: address, data: record.payload);
+    if (!allowDuplicateAddresses) {
+      _verifyAddressIsUnique(seg);
+    }
     addSegment(seg);
+  }
+
+  void _verifyAddressIsUnique(MemorySegment next) {
+    for (final old in _segments) {
+      if (old.isInRange(next.address, 1) || old.isInRange(next.endAddress, 1)) {
+        throw IHexRangeError(
+            "The address range [${next.address}, ${next.endAddress}[ of a record is not unique! It is overlapping with: [${old.address}, ${old.endAddress}[");
+      }
+    }
   }
 
   /// Returns the max address in the file.

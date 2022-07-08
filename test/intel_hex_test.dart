@@ -114,6 +114,24 @@ void main() {
       expect(hex.maxAddress, 0);
     });
 
+    test('parse duplicate addresses', () {
+      var line1 = ":0400100000000000EC\n";
+      var line2 = ":04000E0000000000EE\n";
+      var line3 = ":0400120000000000EA\n";
+
+      expect(() => IntelHexFile.fromString(line1 + line1),
+          throwsA(TypeMatcher<IHexValueError>()));
+      expect(() => IntelHexFile.fromString(line1 + line2),
+          throwsA(TypeMatcher<IHexValueError>()));
+      expect(() => IntelHexFile.fromString(line1 + line3),
+          throwsA(TypeMatcher<IHexValueError>()));
+      var hex = IntelHexFile.fromString(line1 + line1 + line2 + line3,
+          allowDuplicateAddresses: true);
+
+      expect(hex.segments.length, 1);
+      expect(hex.maxAddress, 0x16);
+    });
+
     test('Parse I8HEX', () {
       final hex = IntelHexFile.fromString(i8HexString);
       final start = 0x0120;
