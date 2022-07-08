@@ -63,7 +63,7 @@ var hex = IntelHexFile.fromData(data);
 var hexString = hex.toFileContents();
 ```
 
-See also the examples in the [examples directory](https://github.com/domohuhn/intel_hex/tree/main/examples).
+See also the examples in the [examples directory](https://github.com/domohuhn/intel_hex/tree/main/example).
 
 ## Additional information
 
