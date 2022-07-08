@@ -51,6 +51,9 @@ class IntelHexFile {
   /// This value may be null if it is not contained in the file.
   int? startLinearAddress;
 
+  /// The start code for a record. The standard value is ":".
+  String startCode = ":";
+
   /// Creates a file with a single segment if [address] is >= 0 and [length] is >0.
   /// Otherwise the file is empty.
   IntelHexFile({int? address, int? length}) : _segments = [] {
@@ -76,7 +79,13 @@ class IntelHexFile {
   /// May throw an error during parsing. Potential error cases are: a checksum that is not correct,
   /// a record with an unknown record type, a record where the given length is wrong, a record that
   /// can not be converted to integers or if records 3 or 5 occur multiple times.
-  IntelHexFile.fromString(String data) : _segments = [] {
+  ///
+  /// If a nonstandard start code should be used instead of ":", then you must provide it
+  /// via the optional argument [startToken]. If provided, the [startCode] property will be set.
+  IntelHexFile.fromString(String data, {String? startToken}) : _segments = [] {
+    if (startToken != null) {
+      startCode = startToken;
+    }
     final re = RegExp(r'[\r\n]+');
     final lines = data.split(re);
     int lineNo = 0;
@@ -85,12 +94,12 @@ class IntelHexFile {
 
     for (final line in lines) {
       lineNo++;
-      if (!line.contains(":")) {
+      if (!line.contains(startCode)) {
         continue;
       }
       bool done = false;
       try {
-        var record = IHexRecord(line);
+        var record = IHexRecord(line, startCode: startCode);
         switch (record.recordType) {
           case IHexRecordType.data:
             _addDataRecord(
@@ -133,17 +142,19 @@ class IntelHexFile {
   String toFileContents({IntelHexFormat format = IntelHexFormat.i32HEX}) {
     String rv = "";
     if (startLinearAddress != null) {
-      rv += createStartLinearAddressRecord(startLinearAddress!);
+      rv += createStartLinearAddressRecord(startLinearAddress!,
+          startCode: startCode);
     }
     if (startSegmentAddress != null) {
       rv += createStartSegmentAddressRecord(startSegmentAddress!.codeSegment,
-          startSegmentAddress!.instructionPointer);
+          startSegmentAddress!.instructionPointer,
+          startCode: startCode);
     }
 
     for (final seg in segments) {
-      rv += seg.toFileContents(format: format);
+      rv += seg.toFileContents(format: format, startCode: startCode);
     }
-    rv += createEndOfFileRecord();
+    rv += createEndOfFileRecord(startCode: startCode);
     return rv;
   }
 
@@ -163,6 +174,7 @@ class IntelHexFile {
       if (old.overlaps(segment)) {
         old.combine(segment);
         combined = true;
+        break;
       }
     }
     if (!combined) {
@@ -176,9 +188,9 @@ class IntelHexFile {
   void _mergeSegments() {
     for (int i = 0; i < _segments.length; ++i) {
       for (int k = i + 1; k < _segments.length; ++k) {
-        if (_segments[i].overlaps(_segments[k])) {
-          _segments[i].combine(_segments[k]);
-          _segments[k].isOverlapping = true;
+        if (_segments[k].overlaps(_segments[i])) {
+          _segments[k].combine(_segments[i]);
+          _segments[i].isOverlapping = true;
         }
       }
     }

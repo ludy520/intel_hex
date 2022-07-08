@@ -14,7 +14,9 @@ import 'package:intel_hex/intel_hex.dart';
 /// The length of data must be less than 255 otherwise an exception is thrown.
 ///
 /// Example: ":0300300002337A1E"
-String createDataRecord(int address, Uint8List data) {
+///
+/// A different start token than ":" can be provided via [startCode].
+String createDataRecord(int address, Uint8List data, {String startCode = ":"}) {
   if (address > 65535) {
     throw IHexRangeError("Address $address does not fit in two bytes!");
   }
@@ -31,7 +33,7 @@ String createDataRecord(int address, Uint8List data) {
   for (int i = 0; i < byteCount; ++i) {
     tmp[4 + i] = data[i];
   }
-  return _convertToHexString(appendChecksum(tmp));
+  return _convertToHexString(appendChecksum(tmp), startCode);
 }
 
 /// Creates an Extended Segment Address record from the given [address] and [data].
@@ -41,7 +43,10 @@ String createDataRecord(int address, Uint8List data) {
 /// The address must be able to fit in 2 bytes after it was divided by 16 otherwise an exception is thrown.
 ///
 /// Example: ":020000021200EA"
-String createExtendedSegmentAddressRecord(int address) {
+///
+/// A different start token than ":" can be provided via [startCode].
+String createExtendedSegmentAddressRecord(int address,
+    {String startCode = ":"}) {
   var computed = address >> 4;
   if (computed > 65535) {
     throw IHexRangeError("Address $address does not fit in two bytes!");
@@ -53,7 +58,7 @@ String createExtendedSegmentAddressRecord(int address) {
   tmp[3] = 0x02;
   tmp[4] = (computed >> 8) & 0xFF;
   tmp[5] = computed & 0xFF;
-  return _convertToHexString(appendChecksum(tmp));
+  return _convertToHexString(appendChecksum(tmp), startCode);
 }
 
 /// Creates an Extended Linear Address record from the given [address].
@@ -61,7 +66,10 @@ String createExtendedSegmentAddressRecord(int address) {
 /// following data records. This allows addressing up to 4 GB of memory.
 ///
 /// Example: ":02000004FFFFFC"
-String createExtendedLinearAddressRecord(int address) {
+///
+/// A different start token than ":" can be provided via [startCode].
+String createExtendedLinearAddressRecord(int address,
+    {String startCode = ":"}) {
   var computed = (address >> 16);
   var tmp = Uint8List(6);
   tmp[0] = 0x02;
@@ -70,7 +78,7 @@ String createExtendedLinearAddressRecord(int address) {
   tmp[3] = 0x04;
   tmp[4] = (computed >> 8) & 0xFF;
   tmp[5] = computed & 0xFF;
-  return _convertToHexString(appendChecksum(tmp));
+  return _convertToHexString(appendChecksum(tmp), startCode);
 }
 
 /// Creates a Start Segment Address record from the given [address].
@@ -79,8 +87,10 @@ String createExtendedLinearAddressRecord(int address) {
 /// For 80x86 processors, this record specifies the starting execution address.
 ///
 /// Example: ":0400000300003800C1"
-String createStartSegmentAddressRecord(
-    int codeSegment, int instructionPointer) {
+///
+/// A different start token than ":" can be provided via [startCode].
+String createStartSegmentAddressRecord(int codeSegment, int instructionPointer,
+    {String startCode = ":"}) {
   var tmp = Uint8List(8);
   tmp[0] = 0x04;
   tmp[1] = 0x00;
@@ -90,7 +100,7 @@ String createStartSegmentAddressRecord(
   tmp[5] = codeSegment & 0xFF;
   tmp[6] = (instructionPointer >> 8) & 0xFF;
   tmp[7] = instructionPointer & 0xFF;
-  return _convertToHexString(appendChecksum(tmp));
+  return _convertToHexString(appendChecksum(tmp), startCode);
 }
 
 /// Creates a Start Linear Address record from the given [address].
@@ -98,7 +108,9 @@ String createStartSegmentAddressRecord(
 /// the starting execution address for CPUs that support it.
 ///
 /// Example: ":04000005000000CD2A"
-String createStartLinearAddressRecord(int address) {
+///
+/// A different start token than ":" can be provided via [startCode].
+String createStartLinearAddressRecord(int address, {String startCode = ":"}) {
   var tmp = Uint8List(8);
   tmp[0] = 0x04;
   tmp[1] = 0x00;
@@ -108,22 +120,24 @@ String createStartLinearAddressRecord(int address) {
   tmp[5] = (address >> 16) & 0xFF;
   tmp[6] = (address >> 8) & 0xFF;
   tmp[7] = address & 0xFF;
-  return _convertToHexString(appendChecksum(tmp));
+  return _convertToHexString(appendChecksum(tmp), startCode);
 }
 
 /// Converts [data] to a String with hex values.
-String _convertToHexString(Uint8List data) {
+String _convertToHexString(Uint8List data, String startCode) {
   var rv = "";
   for (final value in data) {
     rv += value.toRadixString(16).padLeft(2, '0').toUpperCase();
   }
-  return ":$rv\n";
+  return "$startCode$rv\n";
 }
 
 /// Creates the end of file record.
 /// Must occur once per file.
-String createEndOfFileRecord() {
-  return ":00000001FF\n";
+///
+/// A different start token than ":" can be provided via [startCode].
+String createEndOfFileRecord({String startCode = ":"}) {
+  return "${startCode}00000001FF\n";
 }
 
 /// The record type in a file
@@ -149,12 +163,13 @@ enum IHexRecordType {
 
 /// Represents a record read from a file.
 class IHexRecord {
-  IHexRecord(this.line) {
-    if (!line.contains(":")) {
-      throw IHexValueError("Line contains no ':' - start record required!");
+  IHexRecord(this.line, {String startCode = ":"}) {
+    if (!line.contains(startCode)) {
+      throw IHexValueError(
+          "Line contains no '$startCode' - a start code is required!");
     }
     line = line.trim();
-    final start = line.indexOf(":") + 1;
+    final start = line.indexOf(startCode) + 1;
     List<int> parsed = [];
     for (var i = start; i < line.length; i = i + 2) {
       parsed.add(int.parse(line.substring(i, i + 2), radix: 16));

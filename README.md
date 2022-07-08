@@ -1,5 +1,8 @@
 # Intel HEX library
 
+[![Dart](https://github.com/domohuhn/intel_hex/actions/workflows/dart.yml/badge.svg)](https://github.com/domohuhn/intel_hex/actions/workflows/dart.yml)
+[![codecov](https://codecov.io/gh/domohuhn/intel_hex/branch/main/graph/badge.svg?token=KEN97CAD5L)](https://codecov.io/gh/domohuhn/intel_hex)
+
 A dart library that reads and writes [Intel HEX files](https://en.wikipedia.org/wiki/Intel_HEX).
 Intel HEX is a file format that is used to store binary data as ASCII text. It is often used
 to program microcontrollers. The file format comprises record blocks. Each record is a line in

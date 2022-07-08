@@ -14,6 +14,7 @@ void main() {
       expect(hex.maxAddress, 0);
       expect(hex.toFileContents(), ":00000001FF\n");
       expect(hex.toString(), '"Intel HEX" : { "segments": [\n] }');
+      expect(hex.fileExtensions()[0], '.hex');
     });
 
     test('file with segment', () {
@@ -37,6 +38,44 @@ void main() {
       expect(hex.maxAddress, 0x140);
       for (int i = 0; i < 0x140; ++i) {
         expect(hex.segments.first.byte(i), i < 0x10 ? 0 : 0xFF);
+      }
+    });
+
+    test('file from data', () {
+      var data = <int>[];
+      for (int i = 0; i < 0x130; ++i) {
+        data.add(0xFF);
+      }
+      final hex = IntelHexFile.fromData(data, address: 0x10);
+      expect(hex.segments.length, 1);
+      expect(hex.maxAddress, 0x140);
+      for (int i = 0x10; i < 0x140; ++i) {
+        expect(hex.segments.first.byte(i), 0xFF);
+      }
+    });
+
+    test('merge segments', () {
+      var data1 = <int>[];
+      var data2 = <int>[];
+      var data3 = <int>[];
+      for (int i = 0; i < 0x10; ++i) {
+        data1.add(0xFF);
+        data2.add(0x00);
+        data3.add(0x0F);
+      }
+      final hex = IntelHexFile.fromData(data1);
+      hex.addAll(0x12, data2);
+      hex.addAll(0x5, data3);
+      expect(hex.segments.length, 1);
+      expect(hex.maxAddress, 0x22);
+      for (int i = 0x0; i < 0x5; ++i) {
+        expect(hex.segments.first.byte(i), 0xFF);
+      }
+      for (int i = 0x5; i < 0x15; ++i) {
+        expect(hex.segments.first.byte(i), 0x0F);
+      }
+      for (int i = 0x15; i < 0x22; ++i) {
+        expect(hex.segments.first.byte(i), 0x00);
       }
     });
 
@@ -112,6 +151,50 @@ void main() {
       expect(hex.segments.first.byte(start + 0x01), 0x4E);
       expect(hex.segments.first.byte(start + 0x1F), 0x21);
       expect(hex.toFileContents(), i32HexString);
+      expect(() => hex.toFileContents(format: IntelHexFormat.i16HEX),
+          throwsA(TypeMatcher<IHexRangeError>()));
+    });
+
+    test('Parse I8HEX - startToken \$ ', () {
+      final changedStr = i8HexString.replaceAll(':', '\$');
+      final hex = IntelHexFile.fromString(changedStr, startToken: '\$');
+      final start = 0x0120;
+      expect(hex.segments.length, 1);
+      expect(hex.maxAddress, start + 0x20);
+      expect(hex.format, IntelHexFormat.i8HEX);
+      expect(hex.segments.first.address, start);
+      expect(hex.segments.first.byte(start), 0x19);
+      expect(hex.segments.first.byte(start + 0x01), 0x4E);
+      expect(hex.segments.first.byte(start + 0x1F), 0x21);
+      expect(hex.toFileContents(), changedStr);
+    });
+
+    test('Parse I16HEX - startToken \$ ', () {
+      final changedStr = i16HexString.replaceAll(':', '\$');
+      final hex = IntelHexFile.fromString(changedStr, startToken: '\$');
+      final start = 0x0120 + 0x10000;
+      expect(hex.segments.length, 1);
+      expect(hex.maxAddress, start + 0x20);
+      expect(hex.format, IntelHexFormat.i16HEX);
+      expect(hex.segments.first.address, start);
+      expect(hex.segments.first.byte(start), 0x19);
+      expect(hex.segments.first.byte(start + 0x01), 0x4E);
+      expect(hex.segments.first.byte(start + 0x1F), 0x21);
+      expect(hex.toFileContents(format: IntelHexFormat.i16HEX), changedStr);
+    });
+
+    test('Parse I32HEX - startToken \$ ', () {
+      final changedStr = i32HexString.replaceAll(':', '\$');
+      final hex = IntelHexFile.fromString(changedStr, startToken: '\$');
+      final start = 0x0120 + 0xFFFF0000;
+      expect(hex.segments.length, 1);
+      expect(hex.maxAddress, start + 0x20);
+      expect(hex.format, IntelHexFormat.i32HEX);
+      expect(hex.segments.first.address, start);
+      expect(hex.segments.first.byte(start), 0x19);
+      expect(hex.segments.first.byte(start + 0x01), 0x4E);
+      expect(hex.segments.first.byte(start + 0x1F), 0x21);
+      expect(hex.toFileContents(), changedStr);
     });
 
     test('Parse startSegment', () {

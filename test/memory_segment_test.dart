@@ -20,6 +20,20 @@ void main() {
       expect(segment.length, 0x20);
     });
 
+    test('Set line length', () {
+      var segment = MemorySegment(address: 0x42);
+      expect(
+          () => segment.lineLength = 0, throwsA(TypeMatcher<IHexValueError>()));
+      expect(() => segment.lineLength = 256,
+          throwsA(TypeMatcher<IHexValueError>()));
+    });
+
+    test('Iterator error', () {
+      var segment = MemorySegment(address: 0x42);
+      var itr = segment.iterator;
+      expect(() => itr.current, throwsA(TypeMatcher<IHexValueError>()));
+    });
+
     test('Check if in segment', () {
       var segment = MemorySegment(address: 0x42, length: 32);
       expect(segment.isInRange(0x41, 1), false);
@@ -27,6 +41,9 @@ void main() {
       expect(segment.isInRange(0x42, 32), true);
       expect(segment.isInRange(0x42 + 31, 1), true);
       expect(segment.isInRange(0x42 + 32, 1), false);
+      expect(() => segment.byte(0xFF), throwsA(TypeMatcher<IHexRangeError>()));
+      expect(() => segment.writeByte(0xFF, 42),
+          throwsA(TypeMatcher<IHexRangeError>()));
     });
 
     test('Append byte to segment', () {
