@@ -6,7 +6,6 @@ import 'package:intel_hex/src/exceptions.dart';
 import 'package:intel_hex/src/memory_segment.dart';
 import 'package:intel_hex/src/memory_segment_container.dart';
 import 'package:intel_hex/src/string_conversion.dart';
-import 'dart:math';
 
 /// The format that is used to print the intel hex file.
 ///

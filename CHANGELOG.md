@@ -1,3 +1,7 @@
+## 1.1.1
+
+- Removed unused import.
+
 ## 1.1.0
 
 - Added check for duplicate addresses when parsing a string.
