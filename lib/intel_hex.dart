@@ -6,6 +6,8 @@
 ///
 /// Intel HEX is a file format that stores binary data as ASCII text files.
 /// The primary interface to use this library is the class [IntelHexFile].
+/// The hex file may contain multiple instenaces of [MemorySegment] that
+/// describe the binary layout of the memory.
 library intel_hex;
 
 export 'src/intel_hex_base.dart';

@@ -35,11 +35,20 @@ class StartSegmentAddress {
 /// To parse a file, simply read it as string and call the fromString()
 /// constructor. If you want to write a file with binary data, then
 /// you can create an empty file and add your data by calling addAll().
+///
+/// The contents of the file are stored as [MemorySegment].
 class IntelHexFile {
   final List<MemorySegment> _segments;
 
+  /// Returns all segments in the file. To add data, use [addSegment] or [addAll].
   List<MemorySegment> get segments => _segments;
+
+  /// The start address where the code is executed (for 80x86 CPUs).
+  /// This value may be null if it is not contained in the file.
   StartSegmentAddress? startSegmentAddress;
+
+  /// The start address where the code is executed (if supported by the CPU).
+  /// This value may be null if it is not contained in the file.
   int? startLinearAddress;
 
   /// Creates a file with a single segment if [address] is >= 0 and [length] is >0.
@@ -50,8 +59,10 @@ class IntelHexFile {
     }
   }
 
-  /// Creates a file with a single segment containing all the [data].
+  /// Creates a file with a single segment containing all bytes from [data].
   /// The start [address] is 0 unless another value is provided.
+  ///
+  /// The contents of [data] will be truncated to (0, 255).
   IntelHexFile.fromData(Iterable<int> data, {int address = 0})
       : _segments = [] {
     addAll(address, data);
@@ -59,7 +70,7 @@ class IntelHexFile {
 
   /// Parses the Intel Hex records in the [data] string and adds it to the
   /// segments in this object. All lines without ":" are ignored. In lines with a colon all preceding
-  /// characters are ignored. After the colon, only valid characters for hexadecimal numbers ([0-9a-fA-F])
+  /// characters are ignored. After the colon, only valid characters for hexadecimal numbers (0-9a-fA-F)
   /// are allowed up until the end of the line.
   ///
   /// May throw an error during parsing. Potential error cases are: a checksum that is not correct,
@@ -137,7 +148,7 @@ class IntelHexFile {
   }
 
   /// Adds the data conatined in [data] to the file at [startAddress].
-  /// Contents will be truncated to [0, 255].
+  /// Contents will be truncated to (0, 255).
   /// If there was data
   void addAll(int startAddress, Iterable<int> data) {
     var newSegment = MemorySegment.fromBytes(address: startAddress, data: data);
@@ -224,7 +235,7 @@ class IntelHexFile {
     ];
   }
 
-  /// Prints information about the file. and its contents.
+  /// Prints information about the file and its contents.
   @override
   String toString() {
     String rv = '"Intel HEX" : { "segments": [ \n';

@@ -10,6 +10,8 @@ import 'package:intel_hex/src/intel_hex_base.dart';
 import 'package:intel_hex/src/string_conversion.dart';
 
 /// The class that represents a memory segment of an Intel Hex file.
+///
+/// A segment consists of a start address and a contiguous block of bytes.
 class MemorySegment extends Iterable<SegmentByte> {
   /// Constructs a segment at the given [address] with the given [length].
   MemorySegment({required int address, int length = 0})
@@ -51,6 +53,7 @@ class MemorySegment extends Iterable<SegmentByte> {
   /// Returns one past the last valid address for this segment.
   int get endAddress => _startAddress + length;
 
+  /// The number of bytes inside the segment.
   @override
   int get length => _data.length;
 
