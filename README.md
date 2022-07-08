@@ -40,7 +40,7 @@ The following record types can be parsed:
 To use the package, simply add it to your pupspec.yaml:
 ```yaml
 dependencies:
-  intel_hex: ^1.0.0
+  intel_hex: ^1.1.0
 ```
 
 And you are good to go!
@@ -67,6 +67,7 @@ var hexString = hex.toFileContents();
 ```
 
 See also the examples in the [examples directory](https://github.com/domohuhn/intel_hex/tree/main/example).
+There is also an up to date documentation on [pub.dev](https://pub.dev/documentation/intel_hex/latest/) that .
 
 ## Additional information
 

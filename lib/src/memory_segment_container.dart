@@ -5,14 +5,14 @@
 import 'package:intel_hex/src/memory_segment.dart';
 import 'dart:math';
 
-/// This class represents the memory segments inside an Intel HEX file.
+/// This class represents multiple memory segments.
 ///
-/// The contents of the file are stored as instances of [MemorySegment].
+/// The contents of the memory are stored as instances of [MemorySegment].
 class MemorySegmentContainer {
   /// list with all segments.
   final List<MemorySegment> _segments;
 
-  /// Returns all segments in the file. To add data, use [addSegment] or [addAll].
+  /// Returns all segments in the container. To add data, use [addSegment] or [addAll].
   List<MemorySegment> get segments => _segments;
 
   /// Creates a container with a single segment if [address] is >= 0 and [length] is >= 0.
@@ -32,7 +32,7 @@ class MemorySegmentContainer {
     addAll(address, data);
   }
 
-  /// Adds the data contained in [data] to the file at [startAddress].
+  /// Adds the data contained in [data] to the container at [startAddress].
   /// Contents will be truncated to (0, 255).
   /// If there was data at any of the address in the range then the old data will be overwritten.
   void addAll(int startAddress, Iterable<int> data) {
@@ -40,7 +40,7 @@ class MemorySegmentContainer {
     addSegment(newSegment);
   }
 
-  /// Adds the [segment] to the file and overwrites data that was stored previously at the
+  /// Adds the [segment] to the container and overwrites data that was stored previously at the
   /// same addresses.
   ///
   /// Also sorts the segments, merges overlapping segments and the remove the duplicates.
@@ -79,13 +79,13 @@ class MemorySegmentContainer {
     _segments.sort((a, b) => a.address.compareTo(b.address));
   }
 
-  /// Returns the max address in the file.
+  /// Returns the max address of a segment in the container.
   int get maxAddress => segments.fold(
       0,
       (int previousValue, MemorySegment element) =>
           max(previousValue, element.endAddress));
 
-  /// Prints the list of segments as json array.
+  /// Prints the list of segments and their address ranges as json array.
   @override
   String toString() {
     String rv = '"segments": [ ';
