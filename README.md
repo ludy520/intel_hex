@@ -67,7 +67,7 @@ var hexString = hex.toFileContents();
 ```
 
 See also the examples in the [examples directory](https://github.com/domohuhn/intel_hex/tree/main/example).
-There is also an up to date documentation on [pub.dev](https://pub.dev/documentation/intel_hex/latest/) that .
+There is also an up to date documentation on [pub.dev](https://pub.dev/documentation/intel_hex/latest/) that explains the API of the library.
 
 ## Additional information
 
