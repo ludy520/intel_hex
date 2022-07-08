@@ -250,10 +250,10 @@ class IntelHexFile {
   /// Prints information about the file and its contents.
   @override
   String toString() {
-    String rv = '"Intel HEX" : { "segments": [ \n';
+    String rv = '"Intel HEX" : { "segments": [ ';
     for (var element in _segments) {
-      rv += '{"start": ${element.address},"end": ${element.endAddress}},\n';
+      rv += '{"start": ${element.address},"end": ${element.endAddress}},';
     }
-    return '${rv.substring(0, rv.length - 2)}\n] }';
+    return '${rv.substring(0, rv.length - 1)}] }';
   }
 }

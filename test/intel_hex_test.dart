@@ -13,7 +13,7 @@ void main() {
       expect(hex.segments.length, 0);
       expect(hex.maxAddress, 0);
       expect(hex.toFileContents(), ":00000001FF\n");
-      expect(hex.toString(), '"Intel HEX" : { "segments": [\n] }');
+      expect(hex.toString(), '"Intel HEX" : { "segments": [] }');
       expect(hex.fileExtensions()[0], '.hex');
     });
 
@@ -24,7 +24,7 @@ void main() {
       expect(hex.toFileContents(),
           ":1001200000000000000000000000000000000000CF\n:1001300000000000000000000000000000000000BF\n:00000001FF\n");
       expect(hex.toString(),
-          '"Intel HEX" : { "segments": [ \n{"start": 288,"end": 320}\n] }');
+          '"Intel HEX" : { "segments": [ {"start": 288,"end": 320}] }');
     });
 
     test('file add data', () {

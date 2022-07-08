@@ -32,3 +32,15 @@ List<int> data = /* fill data */;
 var hex = IntelHexFile.fromData(data);
 var hexString = hex.toFileContents();
 ```
+
+## Try the executables
+
+You can try the example executables with a few simple commands in the project root directory:
+```bash
+# Runs the linter on a broken file - will display an error
+dart ./example/intel_hex_lint.dart ./example/convert_to_intel_hex.dart
+# Converts a file to Intel HEX
+dart ./example/convert_to_intel_hex.dart ./example/convert_to_intel_hex.dart
+# Runs the linter on a valid file
+dart ./example/intel_hex_lint.dart ./example/convert_to_intel_hex.dart.hex
+```
