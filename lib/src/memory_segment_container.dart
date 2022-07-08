@@ -42,7 +42,7 @@ class MemorySegmentContainer {
 
   /// Adds the [segment] to the file and overwrites data that was stored previously at the
   /// same addresses.
-  /// 
+  ///
   /// Also sorts the segments, merges overlapping segments and the remove the duplicates.
   void addSegment(MemorySegment segment) {
     bool combined = false;
@@ -95,4 +95,3 @@ class MemorySegmentContainer {
     return '${rv.substring(0, rv.length - 1)}]';
   }
 }
-

@@ -251,7 +251,6 @@ void main() {
     });
   });
 
-  
   group('Append data', () {
     var segment = MemorySegment(address: 0);
     setUp(() {
@@ -357,6 +356,5 @@ void main() {
       expect(segment.byte(6), 8);
       expect(segment.byte(7), 64);
     });
-
   });
 }

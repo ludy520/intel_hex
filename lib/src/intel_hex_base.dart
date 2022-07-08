@@ -40,7 +40,6 @@ class StartSegmentAddress {
 /// The contents of the file are stored as [MemorySegment]. The segments
 /// are managed in the base class [MemorySegmentContainer].
 class IntelHexFile extends MemorySegmentContainer {
-
   /// The start address where the code is executed (for 80x86 CPUs).
   /// This value may be null if it is not contained in the file.
   StartSegmentAddress? startSegmentAddress;
@@ -54,15 +53,15 @@ class IntelHexFile extends MemorySegmentContainer {
 
   /// Creates a file with a single segment if [address] is >= 0 and [length] is >= 0.
   /// Otherwise the file is empty.
-  IntelHexFile({int? address, int? length}) 
-    : super(address: address, length: length);
+  IntelHexFile({int? address, int? length})
+      : super(address: address, length: length);
 
   /// Creates a file with a single segment containing all bytes from [data].
   /// The start [address] is 0 unless another value is provided.
   ///
   /// The contents of [data] will be truncated to (0, 255).
   IntelHexFile.fromData(Iterable<int> data, {int address = 0})
-    : super.fromData(data, address: address);
+      : super.fromData(data, address: address);
 
   /// Parses the Intel Hex records in the [data] string and adds it to the
   /// segments in this object. All lines without ":" are ignored. In lines with a colon all preceding

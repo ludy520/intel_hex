@@ -12,3 +12,4 @@ library intel_hex;
 
 export 'src/intel_hex_base.dart';
 export 'src/memory_segment.dart';
+export 'src/memory_segment_container.dart';
