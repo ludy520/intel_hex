@@ -79,6 +79,32 @@ void main() {
       }
     });
 
+    test('write file with overlapping segments', () {
+      var data1 = <int>[];
+      var data2 = <int>[];
+      for (int i = 0; i < 0x10; ++i) {
+        data1.add(0xFF);
+        data2.add(0xAA);
+      }
+      final hex = IntelHexFile.fromData(data1);
+      hex.addAll(0x20, data2);
+      expect(hex.segments.length, 2);
+      hex.segments[0].appendUint64(0);
+      hex.segments[0].appendUint64(0);
+      hex.segments[0].appendUint64(0);
+      expect(hex.maxAddress, 0x30);
+      expect(hex.segments[0].endAddress, 0x28);
+      expect(hex.segments[1].address, 0x20);
+      expect(
+          () => hex.toFileContents(), throwsA(TypeMatcher<IHexRangeError>()));
+      final str = hex.toFileContents(allowDuplicateAddresses: true);
+      expect(str, """:10000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00
+:1000100000000000000000000000000000000000E0
+:080020000000000000000000D8
+:10002000AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA30
+:00000001FF\n""");
+    });
+
     test('write start linear address', () {
       final hex = IntelHexFile();
       hex.startLinearAddress = 0x12345678;
@@ -185,6 +211,7 @@ void main() {
       expect(hex.segments.first.byte(start + 0x01), 0x4E);
       expect(hex.segments.first.byte(start + 0x1F), 0x21);
       expect(hex.toFileContents(), changedStr);
+      expect(hex.toFileContents(startToken: ':'), i8HexString);
     });
 
     test('Parse I16HEX - startToken \$ ', () {

@@ -73,7 +73,7 @@ class IntelHexFile extends MemorySegmentContainer {
   /// can not be converted to integers or if records 3 or 5 occur multiple times.
   ///
   /// If a nonstandard start code should be used instead of ":", then you must provide it
-  /// via the optional argument [startToken]. If provided, the [startCode] property will be set.
+  /// via the optional argument [startToken]. If the argument is provided, then [startCode] property will be set to its value.
   ///
   /// The constructor will also verify that every address in the data string is unique. You can prevent this
   /// check by setting [allowDuplicateAddresses] to true.
@@ -136,7 +136,23 @@ class IntelHexFile extends MemorySegmentContainer {
   }
 
   /// Converts this instance of IntelHexFile to an Intel Hex file record block.
-  String toFileContents({IntelHexFormat format = IntelHexFormat.i32HEX}) {
+  ///
+  /// If a nonstandard start code should be used instead of ":", then you must provide it
+  /// via the optional argument [startToken]. If the argument is provided, then [startCode] property will be set to its value.
+  ///
+  /// The method will also verify that every address in the segments is unique.
+  /// You can prevent this check by setting [allowDuplicateAddresses] to true.
+  String toFileContents(
+      {IntelHexFormat format = IntelHexFormat.i32HEX,
+      String? startToken,
+      bool allowDuplicateAddresses = false}) {
+    if (startToken != null) {
+      startCode = startToken;
+    }
+    sortSegments();
+    if (!allowDuplicateAddresses && !validateSegmentsAreUnique()) {
+      throw IHexRangeError("There are overlapping Segments in the file!");
+    }
     String rv = "";
     if (startLinearAddress != null) {
       rv += createStartLinearAddressRecord(startLinearAddress!,

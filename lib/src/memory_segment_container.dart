@@ -94,4 +94,16 @@ class MemorySegmentContainer {
     }
     return '${rv.substring(0, rv.length - 1)}]';
   }
+
+  /// Validates that all segments have unique address and are not overlapping.
+  bool validateSegmentsAreUnique() {
+    for (int i = 0; i < _segments.length; ++i) {
+      for (int k = i + 1; k < _segments.length; ++k) {
+        if (_segments[i].overlaps(_segments[k])) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 }
