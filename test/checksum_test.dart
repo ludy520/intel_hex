@@ -39,11 +39,11 @@ void main() {
     });
 
     test('Check all values', () {
-      for(int i=0;i<256;++i) {
+      for (int i = 0; i < 256; ++i) {
         final list = Uint8List(1);
         list[0] = i;
         final withSum = appendChecksum(list);
-        print("${withSum[0]} <-> ${withSum[1]} : ${withSum[0]+withSum[1]}");
+        print("${withSum[0]} <-> ${withSum[1]} : ${withSum[0] + withSum[1]}");
         expect(validateChecksum(withSum), true);
       }
     });

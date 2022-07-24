@@ -8,18 +8,18 @@ import 'dart:typed_data';
 /// and comparing the result to a [target] value.
 ///
 /// Returns true if the computed value matches the target value.
-bool validateChecksum(Iterable<int> data, [int target=0]) {
+bool validateChecksum(Iterable<int> data, [int target = 0]) {
   return _sumAllLSB(data) == target;
 }
 
-/// Computes a checksum for the given [data]. 
+/// Computes a checksum for the given [data].
 /// All values are summed with overflow and then
-/// the ones or twos complement of the sum is 
+/// the ones or twos complement of the sum is
 /// selected, depending on [isTwosComplement].
-int computeChecksum(Iterable<int> data, [bool isTwosComplement=true]) {
+int computeChecksum(Iterable<int> data, [bool isTwosComplement = true]) {
   int sum = _sumAllLSB(data);
   sum = ~sum;
-  if(isTwosComplement) {
+  if (isTwosComplement) {
     sum += 1;
   }
   return sum & 0xFF;

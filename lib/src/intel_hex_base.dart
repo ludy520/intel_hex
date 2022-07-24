@@ -137,7 +137,7 @@ class IntelHexFile extends MemorySegmentContainer {
   }
 
   /// Controls the number of bytes in a data record.
-  /// 
+  ///
   /// Must be between 1 and 255.
   int get lineLength => _lineLength;
 
@@ -189,8 +189,9 @@ class IntelHexFile extends MemorySegmentContainer {
     final address =
         record.recordAddress + extendedLinearAddress + extendedSegmentAddress;
     final seg = MemorySegment.fromBytes(address: address, data: record.payload);
-    if (!allowDuplicateAddresses && !segmentIsNew(seg)){
-        throw IHexRangeError("The address range [${seg.address}, ${seg.endAddress}[ of a record is not unique!");
+    if (!allowDuplicateAddresses && !segmentIsNew(seg)) {
+      throw IHexRangeError(
+          "The address range [${seg.address}, ${seg.endAddress}[ of a record is not unique!");
     }
     addSegment(seg);
   }
@@ -242,87 +243,88 @@ class IntelHexFile extends MemorySegmentContainer {
         return segmentToI32FileContents(seg, startCode, _lineLength);
     }
   }
-
 }
 
+/// Converts the segment [seg] to an Intel Hex file record block with a max of 16 bit addresses.
+///
+/// Uses [startCode] to start a record and writes [lineLength] bytes per line.
+/// [lineLength] must be between 1 and 255.
+String segmentToI8FileContents(
+    MemorySegment seg, String startCode, int lineLength) {
+  _validateLineLength(lineLength);
+  if (seg.endAddress > 65535) {
+    throw IHexRangeError(
+        "Address range [${seg.address},${seg.endAddress}] can not be represented as I8HEX (max. Range: [0,65535])");
+  }
+  var rv = "";
+  for (int i = 0; i < seg.length; i = i + lineLength) {
+    rv += createDataRecord(
+        seg.address + i, seg.slice(i, min(i + lineLength, seg.length)),
+        startCode: startCode);
+  }
+  return rv;
+}
 
-  /// Converts the segment [seg] to an Intel Hex file record block with a max of 16 bit addresses.
-  /// 
-  /// Uses [startCode] to start a record and writes [lineLength] bytes per line.
-  /// [lineLength] must be between 1 and 255.
-  String segmentToI8FileContents(MemorySegment seg, String startCode, int lineLength) {
-    _validateLineLength(lineLength);
-    if (seg.endAddress > 65535) {
-      throw IHexRangeError(
-          "Address range [${seg.address},${seg.endAddress}] can not be represented as I8HEX (max. Range: [0,65535])");
-    }
-    var rv = "";
-    for (int i = 0; i < seg.length; i = i + lineLength) {
-      rv += createDataRecord(
-          seg.address + i, seg.slice(i, min(i + lineLength, seg.length)),
+/// Converts the segment [seg] to an Intel Hex file record block with a max size of 1 MB.
+///
+/// Uses [startCode] to start a record and writes [lineLength] bytes per line.
+/// [lineLength] must be between 1 and 255.
+String segmentToI16FileContents(
+    MemorySegment seg, String startCode, int lineLength) {
+  _validateLineLength(lineLength);
+  const i16max = 65535;
+  if (seg.endAddress > i16max * 16) {
+    throw IHexRangeError(
+        "Address range [${seg.address},${seg.endAddress}] can not be represented as I16HEX (max. Range: [0,1048560])");
+  }
+  var rv = "";
+  var lastBlockAddress = 0;
+  for (int i = 0; i < seg.length; i = i + lineLength) {
+    final dataStartAddress = seg.address + i;
+    final blockStartAddress = dataStartAddress & 0xF0000;
+    if (blockStartAddress != lastBlockAddress) {
+      rv += createExtendedSegmentAddressRecord(blockStartAddress,
           startCode: startCode);
     }
-    return rv;
+    lastBlockAddress = blockStartAddress;
+    rv += createDataRecord(dataStartAddress & 0xFFFF,
+        seg.slice(i, min(i + lineLength, seg.length)),
+        startCode: startCode);
   }
+  return rv;
+}
 
-  /// Converts the segment [seg] to an Intel Hex file record block with a max size of 1 MB.
-  /// 
-  /// Uses [startCode] to start a record and writes [lineLength] bytes per line.
-  /// [lineLength] must be between 1 and 255.
-  String segmentToI16FileContents(MemorySegment seg, String startCode, int lineLength) {
-    _validateLineLength(lineLength);
-    const i16max = 65535;
-    if (seg.endAddress > i16max * 16) {
-      throw IHexRangeError(
-          "Address range [${seg.address},${seg.endAddress}] can not be represented as I16HEX (max. Range: [0,1048560])");
-    }
-    var rv = "";
-    var lastBlockAddress = 0;
-    for (int i = 0; i < seg.length; i = i + lineLength) {
-      final dataStartAddress = seg.address + i;
-      final blockStartAddress = dataStartAddress & 0xF0000;
-      if (blockStartAddress != lastBlockAddress) {
-        rv += createExtendedSegmentAddressRecord(blockStartAddress,
-            startCode: startCode);
-      }
-      lastBlockAddress = blockStartAddress;
-      rv += createDataRecord(dataStartAddress & 0xFFFF,
-          seg.slice(i, min(i + lineLength, seg.length)),
+/// Converts the segment [seg] to an Intel Hex file record block.
+///
+/// Uses [startCode] to start a record and writes [lineLength] bytes per line.
+/// [lineLength] must be between 1 and 255.
+String segmentToI32FileContents(
+    MemorySegment seg, String startCode, int lineLength) {
+  _validateLineLength(lineLength);
+  validateAddressAndLength(seg.address, seg.length);
+  var rv = "";
+  var lastBlockAddress = 0;
+  for (int i = 0; i < seg.length; i = i + lineLength) {
+    final dataStartAddress = seg.address + i;
+    final blockStartAddress = dataStartAddress & 0xFFFF0000;
+    if (blockStartAddress != lastBlockAddress) {
+      rv += createExtendedLinearAddressRecord(blockStartAddress,
           startCode: startCode);
     }
-    return rv;
+    lastBlockAddress = blockStartAddress;
+    rv += createDataRecord(dataStartAddress & 0xFFFF,
+        seg.slice(i, min(i + lineLength, seg.length)),
+        startCode: startCode);
   }
-
-  /// Converts the segment [seg] to an Intel Hex file record block.
-  /// 
-  /// Uses [startCode] to start a record and writes [lineLength] bytes per line.
-  /// [lineLength] must be between 1 and 255.
-  String segmentToI32FileContents(MemorySegment seg, String startCode, int lineLength) {
-    _validateLineLength(lineLength);
-    validateAddressAndLength(seg.address, seg.length);
-    var rv = "";
-    var lastBlockAddress = 0;
-    for (int i = 0; i < seg.length; i = i + lineLength) {
-      final dataStartAddress = seg.address + i;
-      final blockStartAddress = dataStartAddress & 0xFFFF0000;
-      if (blockStartAddress != lastBlockAddress) {
-        rv += createExtendedLinearAddressRecord(blockStartAddress,
-            startCode: startCode);
-      }
-      lastBlockAddress = blockStartAddress;
-      rv += createDataRecord(dataStartAddress & 0xFFFF,
-          seg.slice(i, min(i + lineLength, seg.length)),
-          startCode: startCode);
-    }
-    return rv;
-  }
+  return rv;
+}
 
 /// Verifies that the line length is correct. Throws an exception otherwise.
 void _validateLineLength(int len) {
-    if (len > 255) {
-      throw IHexValueError("Lines cannot be longer than 255 bytes! Got $len");
-    }
-    if (len < 1) {
-      throw IHexValueError("Lines cannot be shorter than 1 byte! Got $len");
-    }
+  if (len > 255) {
+    throw IHexValueError("Lines cannot be longer than 255 bytes! Got $len");
+  }
+  if (len < 1) {
+    throw IHexValueError("Lines cannot be shorter than 1 byte! Got $len");
+  }
 }

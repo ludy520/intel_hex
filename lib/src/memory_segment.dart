@@ -34,8 +34,8 @@ class MemorySegment extends Iterable<SegmentByte> {
   Uint8List _data = Uint8List(0);
 
   /// Returns a view into the internal data.
-  Uint8List slice([int start=0, int? end]) {
-    return Uint8List.sublistView(_data,start,end);
+  Uint8List slice([int start = 0, int? end]) {
+    return Uint8List.sublistView(_data, start, end);
   }
 
   /// Returns the first valid address for this segment.
