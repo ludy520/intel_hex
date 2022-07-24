@@ -6,8 +6,6 @@ import 'dart:typed_data';
 import 'dart:math';
 import 'package:intel_hex/src/exceptions.dart';
 import 'package:intel_hex/src/validation.dart';
-import 'package:intel_hex/src/intel_hex_base.dart';
-import 'package:intel_hex/src/string_conversion.dart';
 
 /// The class that represents a memory segment of an Intel Hex file.
 ///
@@ -30,25 +28,15 @@ class MemorySegment extends Iterable<SegmentByte> {
   /// the start address of the segment.
   int _startAddress = 0;
 
-  /// Controls the number of bytes in a data record.
-  int get lineLength => _lineLength;
-
-  set lineLength(int v) {
-    if (v > 255) {
-      throw IHexValueError("Lines cannot be longer than 255 bytes! Got $v");
-    }
-    if (v < 1) {
-      throw IHexValueError("Lines cannot be shorter than 1 byte! Got $v");
-    }
-    _lineLength = v;
-  }
-
-  int _lineLength = 16;
-
-  /// If this segment overlaps another one
+  /// If this segment overlaps another one - for internal use in the container.
   bool isOverlapping = false;
 
   Uint8List _data = Uint8List(0);
+
+  /// Returns a view into the internal data.
+  Uint8List slice([int start=0, int? end]) {
+    return Uint8List.sublistView(_data,start,end);
+  }
 
   /// Returns the first valid address for this segment.
   int get address => _startAddress;
@@ -56,7 +44,7 @@ class MemorySegment extends Iterable<SegmentByte> {
   /// Returns one past the last valid address for this segment.
   int get endAddress => _startAddress + length;
 
-  /// Get a ByteData object from the underlying buffer. Allows to serialize/deserialze values.
+  /// Get a ByteData object from the underlying buffer. Allows to serialize/deserialize values.
   ByteData get byteData => ByteData.sublistView(_data);
 
   /// The number of bytes inside the segment.
@@ -217,78 +205,6 @@ class MemorySegment extends Iterable<SegmentByte> {
     final old = length;
     resize(address, old + 8);
     byteData.setUint64(old, value, endian);
-  }
-
-  /// Converts this segment to an Intel Hex file record block.
-  String toFileContents(
-      {IntelHexFormat format = IntelHexFormat.i32HEX, String startCode = ":"}) {
-    switch (format) {
-      case IntelHexFormat.i8HEX:
-        return _toI8FileContents(startCode);
-      case IntelHexFormat.i16HEX:
-        return _toI16FileContents(startCode);
-      case IntelHexFormat.i32HEX:
-        return _toI32FileContents(startCode);
-    }
-  }
-
-  /// Converts this segment to an Intel Hex file record block with a max of 16 bit addresses.
-  String _toI8FileContents(String startCode) {
-    if (endAddress > 65535) {
-      throw IHexRangeError(
-          "Address range [$address,$endAddress] can not be represented as I8HEX (max. Range: [0,65535])");
-    }
-    var rv = "";
-    for (int i = 0; i < length; i = i + lineLength) {
-      rv += createDataRecord(
-          address + i, _data.sublist(i, min(i + lineLength, length)),
-          startCode: startCode);
-    }
-    return rv;
-  }
-
-  /// Converts this segment to an Intel Hex file record block  with a max of 1 MB.
-  String _toI16FileContents(String startCode) {
-    const i16max = 65535;
-    if (endAddress > i16max * 16) {
-      throw IHexRangeError(
-          "Address range [$address,$endAddress] can not be represented as I16HEX (max. Range: [0,1048560])");
-    }
-    var rv = "";
-    var lastBlockAddress = 0;
-    for (int i = 0; i < length; i = i + lineLength) {
-      final dataStartAddress = address + i;
-      final blockStartAddress = dataStartAddress & 0xF0000;
-      if (blockStartAddress != lastBlockAddress) {
-        rv += createExtendedSegmentAddressRecord(blockStartAddress,
-            startCode: startCode);
-      }
-      lastBlockAddress = blockStartAddress;
-      rv += createDataRecord(dataStartAddress & 0xFFFF,
-          _data.sublist(i, min(i + lineLength, length)),
-          startCode: startCode);
-    }
-    return rv;
-  }
-
-  /// Converts this segment to an Intel Hex file record block.
-  String _toI32FileContents(String startCode) {
-    validateAddressAndLength(address, length);
-    var rv = "";
-    var lastBlockAddress = 0;
-    for (int i = 0; i < length; i = i + lineLength) {
-      final dataStartAddress = address + i;
-      final blockStartAddress = dataStartAddress & 0xFFFF0000;
-      if (blockStartAddress != lastBlockAddress) {
-        rv += createExtendedLinearAddressRecord(blockStartAddress,
-            startCode: startCode);
-      }
-      lastBlockAddress = blockStartAddress;
-      rv += createDataRecord(dataStartAddress & 0xFFFF,
-          _data.sublist(i, min(i + lineLength, length)),
-          startCode: startCode);
-    }
-    return rv;
   }
 
   /// Combines this segment with the other segment.

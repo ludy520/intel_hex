@@ -106,4 +106,15 @@ class MemorySegmentContainer {
     }
     return true;
   }
+
+  /// Verifies that the [next] memory segment to add has a unique address and is
+  /// not overlapping with other segments in the container.
+  bool segmentIsNew(MemorySegment next) {
+    for (final old in segments) {
+      if (old.isInRange(next.address, 1) || old.isInRange(next.endAddress, 1)) {
+        return false;
+      }
+    }
+    return true;
+  }
 }

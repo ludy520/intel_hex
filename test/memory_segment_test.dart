@@ -22,22 +22,6 @@ void main() {
       expect(segment.length, 0x20);
     });
 
-    test('Set line length', () {
-      var segment = MemorySegment(address: 0x42);
-      expect(
-          () => segment.lineLength = 0, throwsA(TypeMatcher<IHexValueError>()));
-      expect(() => segment.lineLength = 256,
-          throwsA(TypeMatcher<IHexValueError>()));
-    });
-
-    test('Set Data', () {
-      var segment = MemorySegment(address: 0x42);
-      expect(
-          () => segment.lineLength = 0, throwsA(TypeMatcher<IHexValueError>()));
-      expect(() => segment.lineLength = 256,
-          throwsA(TypeMatcher<IHexValueError>()));
-    });
-
     test('Iterator error', () {
       var segment = MemorySegment(address: 0x42);
       var itr = segment.iterator;
@@ -190,34 +174,29 @@ void main() {
         ":10002000000102030405060708090A0B0C0D0E0F58\n:10003000101112131415161718191A1B1C1D1E1F48\n";
 
     test('to I8HEX, 16 bytes', () {
-      segment.lineLength = 16;
-      var rv = segment.toFileContents(format: IntelHexFormat.i8HEX);
+      var rv = segmentToI8FileContents(segment, ":", 16);
       expect(rv, rv16Bytes);
     });
 
     test('to I8HEX, 64 bytes', () {
-      segment.lineLength = 64;
-      var rv = segment.toFileContents(format: IntelHexFormat.i8HEX);
+      var rv = segmentToI8FileContents(segment, ":", 64);
       expect(rv,
           ":20002000000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1FD0\n");
     });
 
     test('to I8HEX, 8 bytes', () {
-      segment.lineLength = 8;
-      var rv = segment.toFileContents(format: IntelHexFormat.i8HEX);
+      var rv = segmentToI8FileContents(segment, ":", 8);
       expect(rv,
           ":080020000001020304050607BC\n:0800280008090A0B0C0D0E0F74\n:0800300010111213141516172C\n:0800380018191A1B1C1D1E1FE4\n");
     });
 
     test('to I16HEX, 16 bytes', () {
-      segment.lineLength = 16;
-      var rv = segment.toFileContents(format: IntelHexFormat.i16HEX);
+      var rv = segmentToI16FileContents(segment, ":", 16);
       expect(rv, rv16Bytes);
     });
 
     test('to I32HEX, 16 bytes', () {
-      segment.lineLength = 16;
-      var rv = segment.toFileContents(format: IntelHexFormat.i32HEX);
+      var rv = segmentToI32FileContents(segment, ":", 16);
       expect(rv, rv16Bytes);
     });
   });
@@ -229,22 +208,19 @@ void main() {
     }
     final segment = MemorySegment.fromBytes(address: 0x20, data: data);
     test('to I8HEX, 16 bytes per line', () {
-      segment.lineLength = 16;
-      expect(() => segment.toFileContents(format: IntelHexFormat.i8HEX),
+      expect(() => segmentToI8FileContents(segment, ":", 16),
           throwsA(TypeMatcher<IHexRangeError>()));
     });
 
     test('to I16HEX, 128 bytes per line', () {
-      segment.lineLength = 128;
-      var rv = segment.toFileContents(format: IntelHexFormat.i16HEX);
+      var rv = segmentToI16FileContents(segment, ":", 128);
       int count = '\n'.allMatches(rv).length;
       expect(count, 1025);
       expect(rv.contains(":020000021000EC\n"), true);
     });
 
     test('to I32HEX, 128 bytes per line', () {
-      segment.lineLength = 128;
-      var rv = segment.toFileContents(format: IntelHexFormat.i32HEX);
+      var rv = segmentToI32FileContents(segment, ":", 128);
       int count = '\n'.allMatches(rv).length;
       expect(count, 1025);
       expect(rv.contains(":020000040001F9\n"), true);

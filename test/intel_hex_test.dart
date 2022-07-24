@@ -7,6 +7,7 @@ import 'package:intel_hex/src/exceptions.dart';
 import 'package:test/test.dart';
 
 void main() {
+  final throwValueError = throwsA(TypeMatcher<IHexValueError>());
   group('Create Intel HEX files', () {
     test('Empty file', () {
       final hex = IntelHexFile();
@@ -15,6 +16,12 @@ void main() {
       expect(hex.toFileContents(), ":00000001FF\n");
       expect(hex.toString(), '"Intel HEX" : { "segments": [] }');
       expect(hex.fileExtensions()[0], '.hex');
+    });
+
+    test('Set line length', () {
+      final hex = IntelHexFile();
+      expect(() => hex.lineLength = 0, throwValueError);
+      expect(() => hex.lineLength = 256, throwValueError);
     });
 
     test('file with segment', () {
