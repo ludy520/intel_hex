@@ -22,6 +22,8 @@ void main() {
       final hex = IntelHexFile();
       expect(() => hex.lineLength = 0, throwValueError);
       expect(() => hex.lineLength = 256, throwValueError);
+      hex.lineLength = 42;
+      expect(hex.lineLength, 42);
     });
 
     test('file with segment', () {
