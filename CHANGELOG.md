@@ -1,3 +1,9 @@
+## 1.2.0
+
+- The Memory Segment class and the segments container were seperated from the intel hex file code.
+  The memory segments can be reused for other tasks.
+- The checksum methods are now exported.
+
 ## 1.1.1
 
 - Removed unused import.
