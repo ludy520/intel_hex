@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 import 'dart:typed_data';
-import 'package:intel_hex/src/checksum.dart';
 import 'package:intel_hex/src/exceptions.dart';
 import 'package:intel_hex/intel_hex.dart';
 
