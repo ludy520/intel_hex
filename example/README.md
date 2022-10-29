@@ -20,7 +20,7 @@ try {
 }
 ```
 
-## Intel HEX file converter
+## Binary to Intel HEX file converter
 
 The file "convert_to_intel_hex.dart" contains all the code you need to convert binary data to an Intel HEX file.
 
@@ -33,6 +33,10 @@ var hex = IntelHexFile.fromData(data);
 var hexString = hex.toFileContents();
 ```
 
+## Intel HEX file to binary converter
+
+The file "convert_to_binary.dart" contains all the code you need to convert an Intel HEX file to binary data.
+
 ## Try the executables
 
 You can try the example executables with a few simple commands in the project root directory:
@@ -43,4 +47,6 @@ dart ./example/intel_hex_lint.dart ./example/convert_to_intel_hex.dart
 dart ./example/convert_to_intel_hex.dart ./example/convert_to_intel_hex.dart
 # Runs the linter on a valid file
 dart ./example/intel_hex_lint.dart ./example/convert_to_intel_hex.dart.hex
+# Converts an Intel HEX to binary
+dart ./example/convert_to_binary.dart ./example/convert_to_intel_hex.dart.hex
 ```
