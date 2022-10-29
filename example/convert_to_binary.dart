@@ -27,10 +27,11 @@ void main(List<String> arguments) {
     var hex = IntelHexFile.fromString(file);
     final filesize = hex.maxAddress;
     final outfile = getOutputFileName(arguments[0]);
-    print("Converting input file to binary: output: '$outfile' -> $filesize bytes!\n");
+    print(
+        "Converting input file to binary: output: '$outfile' -> $filesize bytes!\n");
     var data = Uint8List(filesize);
-    for(final seg in hex.segments) {
-      for(int i=seg.address;i<seg.endAddress;++i) {
+    for (final seg in hex.segments) {
+      for (int i = seg.address; i < seg.endAddress; ++i) {
         data[i] = seg.byte(i);
       }
     }
@@ -43,8 +44,8 @@ void main(List<String> arguments) {
 
 String getOutputFileName(String nm) {
   int index = nm.lastIndexOf('.');
-  if(index>0) {
-    return '${nm.substring(0,index)}.bin';
+  if (index > 0) {
+    return '${nm.substring(0, index)}.bin';
   }
   return '$nm.bin';
 }

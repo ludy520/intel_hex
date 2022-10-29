@@ -1,3 +1,7 @@
+## 1.2.1
+
+- Added an example on how to convert an Intel Hex file to binary
+
 ## 1.2.0
 
 - The Memory Segment class and the segments container were seperated from the intel hex file code.
