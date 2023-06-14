@@ -167,10 +167,7 @@ class IntelHexFile extends MemorySegmentContainer {
       throw IHexRangeError("There are overlapping Segments in the file!");
     }
     String rv = "";
-    if (startLinearAddress != null) {
-      rv += createStartLinearAddressRecord(startLinearAddress!,
-          startCode: startCode);
-    }
+
     if (startSegmentAddress != null) {
       rv += createStartSegmentAddressRecord(startSegmentAddress!.codeSegment,
           startSegmentAddress!.instructionPointer,
@@ -180,6 +177,12 @@ class IntelHexFile extends MemorySegmentContainer {
     for (final seg in segments) {
       rv += _segmentToFileContents(seg, format: format, startCode: startCode);
     }
+
+    if (startLinearAddress != null) {
+      rv += createStartLinearAddressRecord(startLinearAddress!,
+          startCode: startCode);
+    }
+
     rv += createEndOfFileRecord(startCode: startCode);
     return rv;
   }
